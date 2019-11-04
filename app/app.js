@@ -183,21 +183,7 @@ const UICtrl = (function() {
 
 // App controller
 const App = (function(ItemCtrl, UICtrl) {
-  // Load event listeners
-  const loadEventListeners = function() {
-    const UISelectors = UICtrl.getSelectors();
-    // Item event
-    document.querySelector(UISelectors.addBtn).addEventListener("click", ItemAddSubmit);
-    document.querySelector(UISelectors.itemList).addEventListener("click", itemEditClick);
-    document.querySelector(UISelectors.updateBtn).addEventListener("click", ItemUpdateSubmit)
-    document.addEventListener("keypress", function (e) {
-      if (e.keyCode === 13 || e.which === 13) {
-        e.preventDefault();
-        return false;
-      }
-    })
-  };
-
+  // Event listeners
   const itemEditClick = function (e) {
     if (e.target.classList.contains("edit-content")) {
       // Get item
@@ -249,6 +235,21 @@ const App = (function(ItemCtrl, UICtrl) {
     
     e.preventDefault();
   }
+
+    // Load event listeners
+    const loadEventListeners = function() {
+      const UISelectors = UICtrl.getSelectors();
+      document.querySelector(UISelectors.addBtn).addEventListener("click", ItemAddSubmit);
+      document.querySelector(UISelectors.itemList).addEventListener("click", itemEditClick);
+      document.querySelector(UISelectors.backBtn).addEventListener("click", UICtrl.clearEditState());
+      document.querySelector(UISelectors.updateBtn).addEventListener("click", ItemUpdateSubmit);
+      document.addEventListener("keypress", function (e) {
+        if (e.keyCode === 13 || e.which === 13) {
+          e.preventDefault();
+          return false;
+        }
+      })
+    };
 
 
   // public methods
