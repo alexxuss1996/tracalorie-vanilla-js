@@ -211,6 +211,8 @@ const App = (function(ItemCtrl, UICtrl) {
       UICtrl.addListItem(newItem);
       // Clear input fields
       UICtrl.clearInputs();
+    } else {
+      M.toast({html: "Please, enter all fields!", classes: "red"})
     }
 
     const totalCalories = ItemCtrl.getTotalCalories();
