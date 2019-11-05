@@ -85,8 +85,7 @@ const ItemCtrl = (function() {
 
       const index = ids.indexOf(id);
       // delete item
-      // data.items.splice(index, 1);
-      console.log(id, index, ids);
+      data.items.splice(index, 1);
     },
     logData: function() {
       return data;
