@@ -77,6 +77,17 @@ const ItemCtrl = (function() {
       });
       return found;
     },
+    deleteItem: function (id) { 
+      const ids = data.items.map(function(item) {
+        console.log(item);
+        return item.id;
+      });
+
+      const index = ids.indexOf(id);
+      // delete item
+      // data.items.splice(index, 1);
+      console.log(id, index, ids);
+    },
     logData: function() {
       return data;
     }
@@ -114,12 +125,10 @@ const UICtrl = (function() {
       list.insertAdjacentElement("beforeend", li);
     },
     clearEditState: function(){
-      UICtrl.clearInputs();
       document.querySelector(UISelectors.addBtn).style.display = "inline";
       document.querySelector(UISelectors.updateBtn).style.display = "none";
       document.querySelector(UISelectors.deleteBtn).style.display = "none";
       document.querySelector(UISelectors.backBtn).style.display = "none";
-
     },
     showEditState: function(){
       document.querySelector(UISelectors.addBtn).style.display = "none";
@@ -133,8 +142,8 @@ const UICtrl = (function() {
     },
     addItemToForm: function () {
       document.querySelector(UISelectors.itemNameInput).value = ItemCtrl.getCurrentItem().name;
-      document.querySelector(UISelectors.itemCaloriesInput).value =  ItemCtrl.getCurrentItem().calories;
-      UICtrl.showEditState();
+      document.querySelector(UISelectors.itemCaloriesInput).value = ItemCtrl.getCurrentItem().calories;
+      this.showEditState();
     },
     updateListItem: function (item) {
       let listItems = document.querySelectorAll(UISelectors.listItems);
@@ -150,6 +159,12 @@ const UICtrl = (function() {
           `;
         }
       });
+    },
+    deleteListItem: function(id) {
+      const itemID = `#item-${id}`;
+      const item = document.querySelector(itemID);
+      const itemList =  document.querySelector(UISelectors.itemList);
+      itemList.removeChild(item);
     },
     hideList: function() {
       document.querySelector(UISelectors.itemList).style.display = "none";
@@ -183,6 +198,24 @@ const UICtrl = (function() {
 
 // App controller
 const App = (function(ItemCtrl, UICtrl) {
+
+// Load event listeners
+const loadEventListeners = function() {
+  const UISelectors = UICtrl.getSelectors();
+  document.querySelector(UISelectors.addBtn).addEventListener("click", itemAddSubmit);
+  document.querySelector(UISelectors.deleteBtn).addEventListener("click", itemDeleteSubmit);
+  document.querySelector(UISelectors.backBtn).addEventListener("click", UICtrl.clearEditState());
+  document.querySelector(UISelectors.updateBtn).addEventListener("click", itemUpdateSubmit);
+  document.querySelector(UISelectors.itemList).addEventListener("click", itemEditClick);
+  document.addEventListener("keypress", function (e) {
+    if (e.keyCode === 13 || e.which === 13) {
+      e.preventDefault();
+      return false;
+    }
+  })
+};
+
+
   // Event listeners
   const itemEditClick = function (e) {
     if (e.target.classList.contains("edit-content")) {
@@ -199,11 +232,9 @@ const App = (function(ItemCtrl, UICtrl) {
     e.preventDefault();
   };
 
-  const ItemAddSubmit = function(e) {
-    e.preventDefault();
+  const itemAddSubmit = function(e) {
     // Get form input from UI controller
     const input = UICtrl.getItemInput();
-
     // Check for name and calories input
     if (input.name && input.calories) {
       const newItem = ItemCtrl.addItem(input.name, input.calories);
@@ -212,18 +243,18 @@ const App = (function(ItemCtrl, UICtrl) {
       // Clear input fields
       UICtrl.clearInputs();
     } else {
+      // Materialize toast
       M.toast({html: "Please, enter all fields!", classes: "red"})
     }
-
     const totalCalories = ItemCtrl.getTotalCalories();
-
+    
     UICtrl.showTotalCalories(totalCalories);
+    e.preventDefault();
   };
 
-  const ItemUpdateSubmit = function (e) {
+  const itemUpdateSubmit = function (e) {
     // get input 
     const input = UICtrl.getItemInput();
-
     // Update input 
     const updatedItem = ItemCtrl.updateItem(input.name, input.calories)
     UICtrl.updateListItem(updatedItem);
@@ -232,28 +263,32 @@ const App = (function(ItemCtrl, UICtrl) {
     UICtrl.clearInputs();
     // Update calories state 
     const totalCalories = ItemCtrl.getTotalCalories();
-
+    
     UICtrl.showTotalCalories(totalCalories);
     
     e.preventDefault();
-  }
+  };
 
-    // Load event listeners
-    const loadEventListeners = function() {
-      const UISelectors = UICtrl.getSelectors();
-      document.querySelector(UISelectors.addBtn).addEventListener("click", ItemAddSubmit);
-      document.querySelector(UISelectors.itemList).addEventListener("click", itemEditClick);
-      document.querySelector(UISelectors.backBtn).addEventListener("click", UICtrl.clearEditState());
-      document.querySelector(UISelectors.updateBtn).addEventListener("click", ItemUpdateSubmit);
-      document.addEventListener("keypress", function (e) {
-        if (e.keyCode === 13 || e.which === 13) {
-          e.preventDefault();
-          return false;
-        }
-      })
-    };
-
-
+  const itemDeleteSubmit = function(e) {
+    const currentItem = ItemCtrl.getCurrentItem();
+    // Delete from the data structure
+    ItemCtrl.deleteItem(currentItem.id);
+    
+    // Delete from UI
+    UICtrl.deleteListItem(currentItem.id);
+    
+    // Update calories state 
+    const totalCalories = ItemCtrl.getTotalCalories();
+    
+    UICtrl.showTotalCalories(totalCalories);
+    
+    // Clear Edit state and inputs
+    UICtrl.clearEditState();
+    UICtrl.clearInputs();
+  
+    
+    e.preventDefault();
+  };    
   // public methods
   return {
     init: function() {
